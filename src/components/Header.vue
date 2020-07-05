@@ -1,31 +1,70 @@
 <template>
   <div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="col-xs-3 offset-1">
-          <a class="navbar-brand">RPI Node</a>
-      </div>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
-    </nav>
+     <div class="row d-flex flex-row">
+       <div class="col-md-12 head">
+         <div class="row d-flex flex-row">
+           <div class="col-md-4 logo">
+           RPI-Remote
+         </div>
+         <div class="col-md-1 volume" @click="volumeClicked">
+           <i class="fa fa-volume-up"></i>
+         </div>
+         <div class="col-md-2 my-2">
+           <h3>current volume: {{ currentVol }}</h3>
+         </div>
+         <div class="col-md-1 my-2 hdmi" @click="hdmi(1)">
+           <h3>HDMI 1</h3>
+         </div>
+         <div class="col-md-1 my-2 hdmi" @click="hdmi(2)">
+           <h3>HDMI 2</h3>
+         </div>
+         <div class="col-md-1 my-2 hdmi" @click="hdmi(3)">
+           <h3>HDMI 3</h3>
+         </div>
+         <div class="col-md-1 my-2" @click="tvPWR()">
+           <i class="fa fa-power-off"></i>
+         </div>
+         </div>
+       </div>
+     </div>
   </div>
 </template>
 
 <script>
-export default {};
+import { eventBus } from '../main';
+import { power, setHDMI } from '../js/axios';
+export default {
+  data() {
+    return {
+      volClicked: false,
+      currentVol: 0,
+      isOn: false,
+    }
+  },
+  methods: {
+    volumeClicked: function() {
+      this.volClicked = !this.volClicked;
+      eventBus.$emit('volume-clicked', this.volClicked)
+    },
+    hdmi(ch) {
+      if (this.isOn) {
+        eventBus.$emit('hdmi-changed', ch);
+        setHDMI(ch);
+      }
+    },
+    tvPWR() {
+      this.isOn = !this.isOn;
+      power(this.isOn);      
+      eventBus.$emit('tv-power', this.isOn);
+    }
+  },
+  mounted() {
+    eventBus.$on('vol-changed', vol => {
+      this.currentVol = vol;
+    })
+  }
+};
 </script>
 
-<style scoped>
-.navbar-brand {
-  font-size: 3rem;
-}
+<style>
 </style>
